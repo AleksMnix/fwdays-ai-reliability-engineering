@@ -24,9 +24,10 @@ if ! command -v k9s >/dev/null; then
   rm /tmp/k9s.tar.gz /tmp/k9s
 fi
 
-# Flux CLI
+# Flux CLI (install.sh writes mode 754, so re-chmod for the vscode user)
 if ! command -v flux >/dev/null; then
   curl -fsSL https://fluxcd.io/install.sh | sudo bash
+  sudo chmod 0755 /usr/local/bin/flux
 fi
 
 # OpenTofu
@@ -39,8 +40,10 @@ if ! command -v tofu >/dev/null; then
 fi
 
 # cloud-provider-kind (Go is provided by the devcontainer feature)
+# $GOPATH/bin isn't in the default PATH for new shells, so symlink to /usr/local/bin.
 if ! command -v cloud-provider-kind >/dev/null; then
   go install sigs.k8s.io/cloud-provider-kind@latest
+  sudo ln -sf "$(go env GOPATH)/bin/cloud-provider-kind" /usr/local/bin/cloud-provider-kind
 fi
 
 echo "✓ Dev environment ready: $(kind version 2>/dev/null | head -1), k9s $(k9s version -s 2>/dev/null | head -1), tofu $(tofu version 2>/dev/null | head -1), flux $(flux --version 2>/dev/null)"
