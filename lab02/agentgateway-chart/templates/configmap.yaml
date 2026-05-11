@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentgateway-config
+  labels:
+    app: agentgateway
+data:
+  config.yaml: |
+    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+    binds:
+    - port: {{ .Values.service.apiPort }}
+      listeners:
+      - routes:
+        - name: {{ .Values.llm.provider }}
+          backends:
+          - ai:
+              name: {{ .Values.llm.provider }}
+              provider:
+                {{ .Values.llm.provider }}:
+                  model: {{ .Values.llm.model }}
+          policies:
+            cors:
+              allowOrigins: ["*"]
+              allowHeaders: ["*"]
+            backendAuth:
+              key: "$GEMINI_API_KEY"

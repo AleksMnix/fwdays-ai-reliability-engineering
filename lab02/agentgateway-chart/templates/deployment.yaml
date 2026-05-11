@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentgateway
+  labels:
+    app: agentgateway
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: agentgateway
+  template:
+    metadata:
+      labels:
+        app: agentgateway
+    spec:
+      containers:
+      - name: agentgateway
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: ["-f", "/etc/agentgateway/config.yaml"]
+        ports:
+        - name: api
+          containerPort: {{ .Values.service.apiPort }}
+        - name: ui
+          containerPort: {{ .Values.service.uiPort }}
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: agentgateway-secrets
+              key: GEMINI_API_KEY
+        volumeMounts:
+        - name: config
+          mountPath: /etc/agentgateway
+          readOnly: true
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        readinessProbe:
+          tcpSocket:
+            port: api
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: api
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      volumes:
+      - name: config
+        configMap:
+          name: agentgateway-config

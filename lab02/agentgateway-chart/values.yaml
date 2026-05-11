@@ -1,0 +1,27 @@
+image:
+  repository: cr.agentgateway.dev/agentgateway
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+llm:
+  provider: gemini
+  model: gemini-flash-latest
+
+# Inject via: --set geminiApiKey=$GEMINI_API_KEY
+# Never commit this value.
+geminiApiKey: ""
+
+service:
+  apiPort: 3000
+  uiPort: 15000
+  type: ClusterIP
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
